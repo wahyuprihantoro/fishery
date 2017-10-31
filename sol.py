@@ -1,11 +1,7 @@
-import glob
-
 import PIL
 import tensorflow as tf
 import pandas as pd
 import numpy as np
-import cv2
-import os
 from sklearn.preprocessing import LabelEncoder
 
 labels = pd.read_csv('label.csv')['label'].values
@@ -32,6 +28,18 @@ for i in range(1, 3501):
     if i % 1000 == 0:
         print(str(i))
     images += [load_image(path + str(i) + ".jpg")]
+
+import os
+
+path = os.getcwd() + '/dataset/test_stg1/'
+filenames = []
+for file in os.listdir(path):
+    if file.endswith('.jpg'):
+        filenames += [path + '/' + file]
+test_images = []
+
+for fn in filenames:
+    test_images += [load_image(fn)]
 
 n_classes = 10
 batch_size = 100
@@ -106,11 +114,6 @@ def train_neural_network(x):
                                                               y: batch_y})
                 epoch_loss += c
                 i += batch_size
-            # for _ in range(int(mnist.train.num_examples / batch_size)):
-            #     epoch_x, epoch_y = mnist.train.next_batch(batch_size)
-            #     _, c = sess.run([optimizer, cost], feed_dict={x: epoch_x, y: epoch_y})
-            #     epoch_loss += c
-
             print('Epoch', epoch, 'completed out of', hm_epochs, 'loss:', epoch_loss)
             correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
             accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
@@ -118,4 +121,21 @@ def train_neural_network(x):
             print('Accuracy:', accuracy.eval({x: img, y: labels}))
 
 
+def test_neural_network():
+    checkpoint_file = tf.train.latest_checkpoint(os.getcwd())
+    graph = tf.Graph()
+
+    with graph.as_default():
+        session_conf = tf.ConfigProto(allow_safe_placement=True, log_device_placement=False)
+        sess = tf.Session(config=session_conf)
+        with sess.as_default():
+            saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
+            saver.restore(sess, checkpoint_file)
+            input = graph.get_operation_by_name("input").outputs[0]
+            prediction = graph.get_operation_by_name("prediction").outputs[0]
+            img = np.array(test_images).reshape(None, 32, 32, 1)
+            print(sess.run(prediction, feed_dict={input: img}))
+
+
 train_neural_network(x)
+test_neural_network()
