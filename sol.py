@@ -126,7 +126,7 @@ def test_neural_network():
     graph = tf.Graph()
 
     with graph.as_default():
-        session_conf = tf.ConfigProto(allow_safe_placement=True, log_device_placement=False)
+        session_conf = tf.ConfigProto(log_device_placement=False)
         sess = tf.Session(config=session_conf)
         with sess.as_default():
             saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
