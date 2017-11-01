@@ -92,6 +92,7 @@ def convolutional_neural_network(x):
 
 
 def train_neural_network(x):
+    global accuracy
     prediction = convolutional_neural_network(x)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=y))
     optimizer = tf.train.AdamOptimizer().minimize(cost)
@@ -119,23 +120,9 @@ def train_neural_network(x):
             accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
             img = np.array(images).reshape(3500, 32, 32, 1)
             print('Accuracy:', accuracy.eval({x: img, y: labels}))
-
-
-def test_neural_network():
-    checkpoint_file = tf.train.latest_checkpoint(os.getcwd())
-    graph = tf.Graph()
-
-    with graph.as_default():
-        session_conf = tf.ConfigProto(log_device_placement=False)
-        sess = tf.Session(config=session_conf)
-        with sess.as_default():
-            saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
-            saver.restore(sess, checkpoint_file)
-            input = graph.get_operation_by_name("input").outputs[0]
-            prediction = graph.get_operation_by_name("prediction").outputs[0]
-            img = np.array(test_images).reshape(None, 32, 32, 1)
-            print(sess.run(prediction, feed_dict={input: img}))
+        test = np.array(test_images).reshape(None, 32, 32, 1)
+        prediction = tf.arg_max(y, 1)
+        print(prediction.eval(feed_dict={x: test}))
 
 
 train_neural_network(x)
-test_neural_network()
