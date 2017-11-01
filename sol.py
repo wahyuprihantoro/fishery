@@ -2,13 +2,15 @@ import PIL
 import tensorflow as tf
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, Normalizer, MinMaxScaler
 
 labels = pd.read_csv('label.csv')['label'].values
 le = LabelEncoder()
 le.fit(labels)
 labels = le.transform(labels)
-labels = np.eye(10)[labels]
+folder_names = le.inverse_transform([0, 1, 2, 3, 4, 5, 6, 7])
+print(folder_names)
+labels = np.eye(8)[labels]
 labels = labels[:3500]
 print(labels.shape)
 
@@ -33,19 +35,21 @@ import os
 
 path = os.getcwd() + '/dataset/test_stg1/'
 filenames = []
+files = []
 for file in os.listdir(path):
     if file.endswith('.jpg'):
         filenames += [path + '/' + file]
+        files += [file]
 test_images = []
 
 for fn in filenames:
     test_images += [load_image(fn)]
 
-n_classes = 10
+n_classes = 8
 batch_size = 100
 
 x = tf.placeholder('float', shape=[None, 32, 32, 1])
-y = tf.placeholder('float', shape=[None, 10])
+y = tf.placeholder('float', shape=[None, 8])
 
 keep_rate = 0.8
 keep_prob = tf.placeholder(tf.float32)
@@ -97,7 +101,7 @@ def train_neural_network(x):
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=y))
     optimizer = tf.train.AdamOptimizer().minimize(cost)
 
-    hm_epochs = 2
+    hm_epochs = 50
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
 
@@ -110,7 +114,7 @@ def train_neural_network(x):
                 batch_x = np.array(images[start:end])
                 batch_y = np.array(labels[start:end])
                 batch_x = batch_x.reshape(-1, 32, 32, 1)
-                batch_y = batch_y.reshape(-1, 10)
+                batch_y = batch_y.reshape(-1, 8)
                 _, c = sess.run([optimizer, cost], feed_dict={x: batch_x,
                                                               y: batch_y})
                 epoch_loss += c
@@ -121,8 +125,12 @@ def train_neural_network(x):
             img = np.array(images).reshape(3500, 32, 32, 1)
             print('Accuracy:', accuracy.eval({x: img, y: labels}))
         test = np.array(test_images).reshape(len(test_images), 32, 32, 1)
-        # pred = tf.arg_max(prediction, 1)
-        print(prediction.eval(feed_dict={x: test}))
+        arr = prediction.eval(feed_dict={x: test})
+        scaler = MinMaxScaler(feature_range=(0, 1)).fit(arr)
+        new_arr = scaler.transform(arr)
+        out = pd.DataFrame(new_arr, columns=folder_names)
+        out['image'] = pd.Series(files)
+        out.to_csv('output.csv', index=False)
 
 
 train_neural_network(x)
