@@ -135,9 +135,10 @@ def train_neural_network(x):
         arr = prediction.eval(feed_dict={x: test})
         new_arr = []
         for a in arr:
-            scaler = MinMaxScaler(feature_range=(0, 1)).fit([a])
-            [a] = scaler.transform([a])
-            new_arr += [a]
+            b = (a - np.max(a)) / -np.ptp(a)
+            # scaler = MinMaxScaler(feature_range=(0, 1)).fit([a])
+            # [a] = scaler.transform([a])
+            new_arr += [b]
         out = pd.DataFrame(new_arr, columns=folder_names)
         out['image'] = pd.Series(files)
         out.to_csv('output.csv', index=False)
