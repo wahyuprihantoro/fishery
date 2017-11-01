@@ -33,13 +33,20 @@ for i in range(1, 3501):
 
 import os
 
-path = os.getcwd() + '/dataset/test_stg2/'
 filenames = []
 files = []
+path = os.getcwd() + '/dataset/test_stg1/'
 for file in os.listdir(path):
     if file.endswith('.jpg'):
         filenames += [path + file]
         files += [file]
+
+path = os.getcwd() + '/dataset/test_stg2/'
+for file in os.listdir(path):
+    if file.endswith('.jpg'):
+        filenames += [path + file]
+        files += ['test_stg2/' + file]
+
 test_images = []
 
 for fn in filenames:
@@ -101,7 +108,7 @@ def train_neural_network(x):
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=y))
     optimizer = tf.train.AdamOptimizer().minimize(cost)
 
-    hm_epochs = 50
+    hm_epochs = 1
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
 
@@ -126,8 +133,11 @@ def train_neural_network(x):
             print('Accuracy:', accuracy.eval({x: img, y: labels}))
         test = np.array(test_images).reshape(len(test_images), 32, 32, 1)
         arr = prediction.eval(feed_dict={x: test})
-        scaler = MinMaxScaler(feature_range=(0, 1)).fit(arr)
-        new_arr = scaler.transform(arr)
+        new_arr = []
+        for a in arr:
+            new_arr += [float(i) / sum(a) for i in a]
+        # scaler = MinMaxScaler(feature_range=(0, 1)).fit(arr)
+        # new_arr = scaler.transform(arr)
         out = pd.DataFrame(new_arr, columns=folder_names)
         out['image'] = pd.Series(files)
         out.to_csv('output.csv', index=False)
