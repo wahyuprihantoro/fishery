@@ -120,9 +120,8 @@ def train_neural_network(x):
             accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
             img = np.array(images).reshape(3500, 32, 32, 1)
             print('Accuracy:', accuracy.eval({x: img, y: labels}))
-        test = np.array(test_images).reshape(len(test_images), 32, 32, 1)
-        prediction = tf.arg_max(y, 1)
-        print(prediction.eval(feed_dict={x: test}))
+        pred = tf.arg_max(prediction, 1)
+        print(pred.eval(feed_dict={x: test_images}))
 
 
 train_neural_network(x)
