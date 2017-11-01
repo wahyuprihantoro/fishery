@@ -6,12 +6,11 @@ import cv2
 import os
 from sklearn.preprocessing import LabelEncoder
 
-path = os.getcwd() + '/dataset/test_stg1/'
+path = os.getcwd() + '/dataset/test_stg2/'
 filenames = []
 for file in os.listdir(path):
     if file.endswith('.jpg'):
-        filenames += [path + '/' + file]
-
+        filenames += [path + file]
 
 for fn in filenames:
     img = PIL.Image.open(fn)

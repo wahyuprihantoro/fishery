@@ -33,12 +33,12 @@ for i in range(1, 3501):
 
 import os
 
-path = os.getcwd() + '/dataset/test_stg1/'
+path = os.getcwd() + '/dataset/test_stg2/'
 filenames = []
 files = []
 for file in os.listdir(path):
     if file.endswith('.jpg'):
-        filenames += [path + '/' + file]
+        filenames += [path + file]
         files += [file]
 test_images = []
 
