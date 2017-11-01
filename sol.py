@@ -136,7 +136,7 @@ def train_neural_network(x):
         pred = tf.arg_max(prediction, 1)
         arr = pred.eval(feed_dict={x: test})
         for a in arr:
-            na = np.zeros((0, 8))
+            na = np.zeros(8)
             na[a] = 1
             new_arr += [na]
         out = pd.DataFrame(new_arr, columns=folder_names)
