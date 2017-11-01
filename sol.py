@@ -105,11 +105,10 @@ def convolutional_neural_network(x):
 def train_neural_network(x):
     global accuracy
     prediction = convolutional_neural_network(x)
-    logits = tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=y)
-    cost = tf.reduce_mean(logits)
+    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=y))
     optimizer = tf.train.AdamOptimizer().minimize(cost)
 
-    hm_epochs = 2
+    hm_epochs = 5
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
 
@@ -133,14 +132,14 @@ def train_neural_network(x):
             img = np.array(images).reshape(3500, 32, 32, 1)
             print('Accuracy:', accuracy.eval({x: img, y: labels}))
         test = np.array(test_images).reshape(len(test_images), 32, 32, 1)
-        arr = logits.eval(feed_dict={x: test})
-        # new_arr = []
-        # for a in arr:
-        #     b = (a - np.max(a)) / -np.ptp(a)
-        #     # scaler = MinMaxScaler(feature_range=(0, 1)).fit([a])
-        #     # [a] = scaler.transform([a])
-        #     new_arr += [b]
-        out = pd.DataFrame(arr, columns=folder_names)
+        new_arr = []
+        pred = tf.arg_max(prediction, 1)
+        arr = pred.eval(feed_dict={x: test})
+        for a in arr:
+            na = np.zeros((0, 8))
+            na[a] = 1
+            new_arr += [na]
+        out = pd.DataFrame(new_arr, columns=folder_names)
         out['image'] = pd.Series(files)
         out.to_csv('output.csv', index=False)
 
